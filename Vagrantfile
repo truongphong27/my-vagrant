@@ -1,50 +1,43 @@
+# Vagrantfile: Cấu hình 2 máy ảo với Ubuntu và CentOS
 Vagrant.configure("2") do |config|
-  # Máy ảo Windows Server 2016
+
+  # Máy ảo Ubuntu
+  config.vm.define "ubuntu" do |ubuntu|
+    ubuntu.vm.box = "ubuntu/focal64" # Hộp Ubuntu 20.04
+    ubuntu.vm.hostname = "ubuntu"
+    ubuntu.vm.network "private_network", ip: "192.168.33.11" # Địa chỉ IP tĩnh
+    ubuntu.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+    ubuntu.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y apache2
+    SHELL
+  end
+
+# Máy ảo CentOS
+  config.vm.define "centos" do |centos|
+    centos.vm.box = "centos/7"
+    centos.vm.hostname = "centos"
+    centos.vm.network "private_network", ip: "192.168.33.12"
+    centos.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+  end
+
+# Máy ảo Windows Server 2016
   config.vm.define "win2016" do |win|
     win.vm.box = "mwrock/Windows2016"
-    win.vm.network "public_network"  # Sử dụng mạng Bridge (Public Network)
+    win.vm.network "private_network", ip: "192.168.56.104"
     win.vm.provider "virtualbox" do |vb|
       vb.memory = "4096"
       vb.cpus = 2
     end
-    # Cài đặt IIS trên Windows Server 2016
+    win.vm.boot_timeout = 600
     win.vm.provision "shell", inline: <<-SHELL
-      Write-Output "Cài đặt IIS trên Windows Server 2016"
-      Install-WindowsFeature -Name Web-Server -IncludeManagementTools
+      Write-Output "Cấu hình Windows Server 2016"
     SHELL
   end
-
-  # Máy ảo Ubuntu Server
-  config.vm.define "ubuntu" do |ubuntu|
-    ubuntu.vm.box = "ubuntu/bionic64" # Ubuntu 18.04 LTS
-    ubuntu.vm.network "public_network"  # Sử dụng mạng Bridge (Public Network)
-    ubuntu.vm.provider "virtualbox" do |vb|
-      vb.memory = "2048"
-      vb.cpus = 2
-    end
-    ubuntu.vm.provision "shell", inline: <<-SHELL
-      echo "Cài đặt nginx trên Ubuntu"
-      sudo apt-get update -y
-      sudo apt-get install -y nginx
-      sudo systemctl enable nginx
-      sudo systemctl start nginx
-    SHELL
-  end
-
-  # Máy ảo CentOS
-  config.vm.define "centos" do |centos|
-    centos.vm.box = "centos/7"
-    centos.vm.network "public_network"  # Sử dụng mạng Bridge (Public Network)
-    centos.vm.provider "virtualbox" do |vb|
-      vb.memory = "2048"
-      vb.cpus = 2
-    end
-    centos.vm.provision "shell", inline: <<-SHELL
-      echo "Cài đặt nginx trên CentOS"
-      sudo yum update -y
-      sudo yum install -y nginx
-      sudo systemctl enable nginx
-      sudo systemctl start nginx
-    SHELL
-  end
-end
+ end
